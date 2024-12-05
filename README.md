@@ -26,3 +26,14 @@ pip3 list
 git branch -c main (NAME OF THE NEW BRANCH)
 
 git switch (NAME OF THE NEW BRANCH)
+
+Inside the new branch you can do whatever you want. Then, to merge differences, you can switch back to the **main** branch and use the command:
+
+git merge (NAME OF THE NEW BRANCH)
+
+**PULL and PUSH**
+
+git pull must be run at the begginning to merge the differences with the server.
+
+git push must be run at the end to upload the differences to the server.
+
