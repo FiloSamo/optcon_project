@@ -21,3 +21,8 @@ pip3 install numpy matplotlib cvxpy
 
 pip3 list
 
+**Create a new Branch**
+
+git branch -c main (NAME OF THE NEW BRANCH)
+
+git switch (NAME OF THE NEW BRANCH)
