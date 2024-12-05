@@ -36,4 +36,3 @@ git merge (NAME OF THE NEW BRANCH)
 git pull must be run at the begginning to merge the differences with the server.
 
 git push must be run at the end to upload the differences to the server.
-
