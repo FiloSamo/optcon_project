@@ -1,8 +1,10 @@
 import numpy as np
 
+ns = 4
+ni = 1
+
 def dynamics(xx, uu, dt):
     xx = xx.squeeze()
-    uu = uu.squeeze()
 
     m1 = 1
     m2 = 1
@@ -15,9 +17,6 @@ def dynamics(xx, uu, dt):
     g = 9.81
     f1 = 0.5
     f2 = 0.5
-
-    ns = 4
-    ni = 1
 
     M = np.array([[I1+I2+m1*r1**2+m2*(l1**2+r2**2)+2*m2*l1*r2*np.cos(xx[1]), I2+m2*r2**2+m2*l1*r2*np.cos(xx[1])],
                   [I2+m2*r2**2+m2*l1*r2*np.cos(xx[1]), I2+m2*r2**2]])
@@ -33,8 +32,8 @@ def dynamics(xx, uu, dt):
     
     # Continuous dynamics
     
-    xx = xx.reshape([4,1])
-    uu = uu.reshape([2,1])
+    xx = xx.reshape([ns,1])
+    uu = np.array([[uu[0]], [0]])
 
     xx_dot = np.zeros([ns,1])
 
