@@ -1,0 +1,194 @@
+%
+% Template for OPTCON course projects
+%
+\documentclass[a4paper,11pt,oneside]{book}
+\usepackage[latin1]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb,amsmath,color}
+\usepackage{cite}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage{geometry}
+\usepackage{float}
+
+\geometry{a4paper, margin = 2.5 cm}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{10pt}
+
+\begin{document}
+\pagestyle{myheadings}
+
+%%%%%%%%%%% Cover %%%%%%%%%%%
+\thispagestyle{empty}                                                 
+\begin{center}                                                            
+    \vspace{5mm}
+    {\LARGE UNIVERSIT\`A DI BOLOGNA} \\                       
+      \vspace{5mm}
+\end{center}
+\begin{center}
+  \includegraphics[scale=.27]{figs/logo_unibo}
+\end{center}
+\begin{center}
+      \vspace{5mm}
+      {\LARGE School of Engineering} \\
+        \vspace{3mm}
+      {\Large Master Degree in Automation Engineering} \\
+      \vspace{20mm}
+      {\LARGE Optimal Control} \\
+      \vspace{5mm}{\Large\textbf{Optimal Control of a Flexible Robotic Arm}}                  
+      \vspace{15mm}
+\end{center}
+\begin{flushleft}                                                                              
+     {\large Professor: \textbf{\@ Giuseppe Notarstefano}} \\        
+      \vspace{13mm}
+\end{flushleft}
+\begin{flushright}
+      {\large Students:\\
+      \textbf{Matteo Bonucci\\
+      Filippo Samor\`{i}\\
+      Jacopo Subini}
+      }\\
+\end{flushright}        %capoverso allineato a destra
+\begin{center}
+\vfill
+      {\large Academic year \@2024/2025} \\
+\end{center}
+
+\newpage
+\thispagestyle{empty}
+
+%%%%%%%%%%% Abstract %%%%%%%%%%%%
+\begin{center}
+\chapter*{}
+\thispagestyle{empty}
+{\Huge \textbf{Abstract}}\\
+\vspace{15mm}
+This report presents the development and implementation of the project for the Optimal Control Course at the University of Bologna. The assignment aims to control an underactuated 2-DOF robot manipulator. The report is structured such that each chapter is dedicated to the solution of a specific task.
+
+The project demonstrates the capabilities of the Optimal Control framework in controlling complex systems, such as underactuated systems or time-variant linear systems, such as the linearization of the manipulator system.
+
+The results highlight the robustness in the presence of noise and the variety of possible approaches to the problem.
+
+\end{center}
+
+
+\tableofcontents \thispagestyle{empty}
+% \listoffigures\thispagestyle{empty}
+
+%%%%%%%%%% Introduction %%%%%%%%%%
+\chapter*{Introduction}
+
+In this project, we are tasked with designing an optimal trajectory for a flexible robotic arm. Such systems can represent robotic arms used in medical assistance or other precision applications, where flexibility must be taken into account. The flexible arm is simplified and modeled as a planar two-link robot with torque applied to the first joint.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\linewidth]{image.png}
+    \caption{2-dof manipulator}
+    \label{fig:-2-dof manipulator}
+\end{figure}
+
+The 2-dof manipulator dynamics is reported in matrix form: 
+
+\begin{equation}\label{robot dynamics}
+    M(q)\Ddot{q} + C(q,\Dot{q}) + G(q) + F\Dot{q} = \begin{bmatrix}
+        u \\ 0
+    \end{bmatrix}
+\end{equation}
+
+The configuration variable $q$ is composed of the angles $\theta_1$ and $\theta_2$, which are defined as the relative angular displacement between the two links.
+
+\begin{equation*}
+    \begin{aligned}
+    &M = \begin{pmatrix}
+        I_1 + I_2 + m_1r_1^2 + m_2(l_1^2 + r_2^2) + 2m_2l_1r_2cos(\theta_2) & I_2 + m_2r_2^2 + m_2l_1r_2cos(\theta_2) \\
+        I_2 + m_2r_2^2 + m_2l_1r_2cos(\theta_2) & I_2 + m_2r_2^2
+    \end{pmatrix}\\
+    & C = \begin{pmatrix}
+        -m_2l_1r_2\Dot{\theta}_2sin(\theta_2)(\Dot{\theta}_2 + 2\Dot{\theta}_1) \\
+        m_2l_1r_2sin(\theta_2)\Dot{\theta}_1
+    \end{pmatrix}\\
+    & G = \begin{pmatrix}
+       g(m_1r_1 + m_2l_1)sin(\theta_1) + gm_2r_2sin(\theta_1 + \theta_2) \\
+       gm_2r_2sin(\theta_1 + \theta_2)
+    \end{pmatrix}\\
+    & F = \begin{pmatrix}
+        f_1 & 0 \\ 0 & f_2
+    \end{pmatrix}
+    \end{aligned}
+\end{equation*}
+
+
+The parameters of the robot dynamics are described in the table below:
+
+\begin{center}
+    \textbf{Parameters : set 1}\\
+    \vspace{0.2cm}
+    \begin{tabular}{c|c}
+    \hline
+    $m_1$ & 1 \\
+    $m_2$ & 1 \\
+    $l_1$ & 1 \\
+    $l_2$ & 1 \\
+    $r_1$ & 0.5 \\
+    $r_2$ & 0.5 \\
+    $I_1$ & 0.33 \\
+    $I_1$ & 0.33 \\
+    $g$ & 9.81 \\
+    $f_1$ & 0.1 \\
+    $f_2$ & 0.1 
+\end{tabular}
+\end{center}
+ 
+Task 0: requires writing the dynamics and obtaining the linearization of the system.
+
+Task 1: requires defining a reference transition curve between equilibrium configurations and computing an optimal trajectory between them.
+
+Task 2: requires defining a smooth reference curve between equilibrium configurations and computing again an optimal trajectory. It is suggested to first try tracking the reference with an LQR controller to obtain a feasible initial guess.
+
+Task 3: requires tracking the obtained optimal trajectory with an LQR in the presence of noise.
+
+Task 4: requires tracking the optimal trajectory obtained with an MPC solution in the presence of noise.
+
+Task 5: requires animations for all of the previous tasks.
+
+
+\addcontentsline{toc}{chapter}{Introduction}
+
+%%%%%%%%%% Chapter Title %%%%%%%%%%
+
+\include{task0}
+
+\include{Task1}
+
+\include{Task2}
+
+\include{Task3}
+
+\include{Task4}
+
+\include{Task5}
+
+%%%%%%%%%% Conclusions %%%%%%%%%%
+\chapter*{Conclusions}
+\addcontentsline{toc}{chapter}{Conclusions} 
+
+The project showed how the Optimal Control framework can effectively manage complex systems. It successfully controlled the underactuated manipulator and dealt with time-varying linear systems, such as the linearized model of the manipulator. Additionally, the framework demonstrated its capability to generate optimal trajectories for the system, ensuring smooth and efficient movement while satisfying the system's constraints.
+
+The results proved that the control methods are robust, even when there is noise, making them reliable for practical use. Additionally, the exploration of different approaches highlighted the flexibility of the Optimal Control framework in solving similar problems.
+
+%%%%%%%%%% Bibliography %%%%%%%%%%%
+\bibliography{bibliography}{}
+\bibliographystyle{plain}
+\addcontentsline{toc}{chapter}{Bibliography}
+\nocite{*}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
+
+
+\begin{equation*}
+    \mathcal{X}_{\text{eq}} = \{x \in \mathcal{X} \mid {x = [x_1, x_2, 0, 0] \land u = G_1(x)} ;\hspace{0.1cm} x_1 \in \mathrm{}{R}, x_2 \in \mathrm{}{R}, x_1 + x_2 = {0 \lor \pi} \}
+\end{equation*}

@@ -1,0 +1,99 @@
+\chapter*{Task 0}
+\addcontentsline{toc}{chapter}{Task 0}
+
+Task 0 asks to discretize the dynamics, write the discrete-time state-space equations, and code the dynamics function \texttt{Dynamic.py}.
+
+The state representation is obtained from the formula (\ref{robot dynamics}), defining a state vector $x = [\theta_1 \hspace{0.2cm} \theta_2 \hspace{0.2cm}\Dot{\theta_1} \hspace{0.2cm}\Dot{\theta_2} ]^T$ and writing the dynamics as follows:
+
+\begin{equation}
+    \Dot{x} = f(x,u) = \begin{bmatrix}
+        x_3 \\
+        x_4 \\
+        M^{-1}( -G(x_1,x_2) -C(x_1,x_2,x_3,x_4) - F\begin{bmatrix}
+            x_3\\x_4
+        \end{bmatrix} + \begin{bmatrix}
+            u \\ 0
+        \end{bmatrix}
+    \end{bmatrix}
+\end{equation}
+
+The simulations are made numerically by approximating the continuous dynamics with a discrete one using Euler's method for numerical integration. We denote the discrete time state vector as $x_t$, where the subscript describes the discrete time instant.
+
+\begin{equation}\label{Discretized traj}
+    x_{t+1} = x_t + \Dot{x}\Delta t = x_t + f(x_t,u_t)\Delta t = f_{dis}(x_t,u_t)
+\end{equation}
+
+The linearization matrices are obtained by computing the Jacobian of $f_d(x_t,u_t)$ with respect to $x_t$ for matrix $A_t$ and $u_t$ for matrix $B_t$. They are time-varying if the linearization is computed about a trajectory of the system.
+
+It is possible to compute the discrete matrices starting from the continuous-time Jacobians and obtaining $A_t$ and $B_t$ by discretizing.
+
+
+\begin{equation} \label{con_to_dis}
+        \Delta x_{t+1} = (I_{n\times n} + \frac{\partial f}{\partial x}\bigg|_{x_t,u_t} \Delta t) \Delta x_t + 
+        (\frac{\partial f}{\partial u}\bigg|_{x_t,u_t} \Delta t) \Delta u_t
+\end{equation}
+
+\begin{equation*}
+    A_t = I_{n\times n} + \frac{\partial f}{\partial x}\bigg|_{x_t,u_t} \Delta t = \nabla_1f_{dis}(x,u)^T
+\end{equation*}
+
+\begin{equation*}
+    B_t = \frac{\partial f}{\partial u}\bigg|_{x_t,u_t} \Delta t = \nabla_2f_{dis}(x,u)^T
+\end{equation*}
+
+To compute the derivatives, the symbolic Python package SymPy has been used. The package computes the continuous dynamic Jacobians directly, and then we obtain the discrete Jacobians using (\ref{con_to_dis}).
+
+\section*{Python code}
+
+The discrete dynamics are implemented in Python in the file \texttt{Dynamics.py}. In the code, four main functions are defined:
+
+\begin{itemize}
+    \item \textbf{gravity(xx) }: compute the gravity torque applied to the motor in joint one at a specific state x.\\\\
+    \textbf{Arguments}:
+    \begin{itemize}
+        \item xx : state vector.
+    \end{itemize}
+    \textbf{Return}:
+    \begin{itemize}
+        \item gravity : torque value.
+    \end{itemize}
+
+    \item \textbf{dynamics(xx,uu,dt) }: Compute the future state $x_{t+1}$ given the states $x_t$ and the input $u_t$. The functions first compute the continuous dynamics $f(x,u)$ of the manipulator (\ref{robot dynamics}) and then discretize it using (\ref{Discretized traj}). \\\\
+    \textbf{Arguments}:
+    \begin{itemize}
+        \item xx : state vector at time t.
+        \item uu : input vector at time t.
+        \item dt : time of dicretization.
+    \end{itemize}
+    \textbf{Return}:
+    \begin{itemize}
+        \item xx\_plus : computed state at time t+1. 
+    \end{itemize}
+
+    \item \textbf{linearized\_dynamics\_symbolic()}: Compute the symbolic Jacobians of the continuous dynamics with respect to $x$ and $u$. The computations are made using the Python package Sympy. The symbolic terms are computed only once and then used by other functions to compute the numerical values by substitution of values.
+  \\\\
+    \textbf{Arguments}:
+    \begin{itemize}
+        \item None.
+    \end{itemize}
+    \textbf{Return}:
+    \begin{itemize}
+        \item A\_func : Symbolic jacobian respect to x.
+        \item B\_func : Symbolic jacobian respect to u.
+    \end{itemize}
+
+    \item \textbf{linearized\_dynamics\_numeric(xx,uu,A\_func,B\_func,dt)}: Compute the numerical value of the Jacobians of the discrete dynamics with respect to $x$ and $u$. The computations are made using the continuous symbolic Jacobians computed from \texttt{linearized\_dynamics\_symbolic()} and then applying the formulas from (\ref{con_to_dis}) to compute the discrete ones. \\\\
+    \textbf{Arguments}:
+    \begin{itemize}
+        \item xx : state vector at time t.
+        \item uu : input vector at time t.
+        \item A\_func : Symbolic jacobian respect to x.
+        \item B\_func : Symbolic jacobian respect to u.
+        \item dt : time of dicretization.
+    \end{itemize}
+    \textbf{Return}:
+    \begin{itemize}
+        \item A\_dis : Numeric jacobian respect to x at time t.
+        \item B\_dis : Numeric jacobian respect to u at time t.
+    \end{itemize}
+\end{itemize}

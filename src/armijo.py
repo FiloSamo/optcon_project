@@ -1,18 +1,10 @@
-#
-# Gradient Method for Optimal Control
-# Armijo stepsize selection rule 
-# Marco Falotico
-# Bologna, 8/11/2024
-#
-
-
 import numpy as np
 import matplotlib.pyplot as plt
-import cost as cst
+import cost_newton as cst
 import Dynamics as dyn
 
 
-def select_stepsize(stepsize_0, armijo_maxiters, cc, beta, deltau, xx_ref, uu_ref,  x0, uu, JJ, descent_arm, plot = False):
+def select_stepsize(stepsize_0, armijo_maxiters, cc, beta, deltau, KKt, xx_ref, uu_ref,  x0, xx, uu, JJ, descent_arm, plot = False, dt=0.01):
 
       """
       Computes the stepsize using Armijo's rule.
@@ -53,20 +45,13 @@ def select_stepsize(stepsize_0, armijo_maxiters, cc, beta, deltau, xx_ref, uu_re
 
             xx_temp[:,0] = x0
 
-
             for tt in range(TT-1):
-                  uu_temp[:,tt] = uu[:,tt] + stepsize*deltau[:,tt]
-                  xx_temp[:,tt+1] = dyn.dynamics(xx_temp[:,tt], uu_temp[:,tt])[0]
+                  #uu_temp[:,tt] = uu[:,tt] + stepsize*deltau[:,tt]
+                  uu_temp[:,tt] = uu[:,tt] + KKt[:,1:,tt] @(xx_temp[:,tt] - xx[:,tt]) + stepsize * KKt[:,0,tt]
+                  xx_temp[:,tt+1] = dyn.dynamics(xx_temp[:,tt], uu_temp[:,tt], dt)
 
             # temp cost calculation
-            JJ_temp = 0
-
-            for tt in range(TT-1):
-                  temp_cost = cst.stagecost(xx_temp[:,tt], uu_temp[:,tt], xx_ref[:,tt], uu_ref[:,tt])[0]
-                  JJ_temp += temp_cost
-
-            temp_cost = cst.termcost(xx_temp[:,-1], xx_ref[:,-1])[0]
-            JJ_temp += temp_cost
+            JJ_temp = cst.cost_calculator(xx_temp[:,:], uu_temp[:,:], xx_ref[:,:], uu_ref[:,:], TT)
 
             stepsizes.append(stepsize)      # save the stepsize
             costs_armijo.append(np.min([JJ_temp, 100*JJ]))    # save the cost associated to the stepsize
@@ -81,7 +66,7 @@ def select_stepsize(stepsize_0, armijo_maxiters, cc, beta, deltau, xx_ref, uu_re
             
             if ii == armijo_maxiters -1:
                   print("WARNING: no stepsize was found with armijo rule!")
-            
+                  stepsize = 0
             
       ############################
       # Descent Plot
@@ -89,7 +74,7 @@ def select_stepsize(stepsize_0, armijo_maxiters, cc, beta, deltau, xx_ref, uu_re
 
       if plot:
 
-            steps = np.linspace(0,stepsize_0,int(2e1))
+            steps = np.linspace(0,stepsize_0,int(3e1))
             costs = np.zeros(len(steps))
 
             for ii in range(len(steps)):
@@ -104,23 +89,17 @@ def select_stepsize(stepsize_0, armijo_maxiters, cc, beta, deltau, xx_ref, uu_re
                   xx_temp[:,0] = x0
 
                   for tt in range(TT-1):
-                        uu_temp[:,tt] = uu[:,tt] + step*deltau[:,tt]
-                        xx_temp[:,tt+1] = dyn.dynamics(xx_temp[:,tt], uu_temp[:,tt])[0]
-
-                        # temp cost calculation
-                  JJ_temp = 0
-
-                  for tt in range(TT-1):
-                        temp_cost = cst.stagecost(xx_temp[:,tt], uu_temp[:,tt], xx_ref[:,tt], uu_ref[:,tt])[0]
-                        JJ_temp += temp_cost
-
-                  temp_cost = cst.termcost(xx_temp[:,-1], xx_ref[:,-1])[0]
-                  JJ_temp += temp_cost
+                        #uu_temp[:,tt] = uu[:,tt] + step*deltau[:,tt]
+                        uu_temp[:,tt] = uu[:,tt] + KKt[:,1:,tt] @(xx_temp[:,tt] - xx[:,tt]) + step * KKt[:,0,tt]
+                        xx_temp[:,tt+1] = dyn.dynamics(xx_temp[:,tt], uu_temp[:,tt], dt)
+                  
+                  # temp cost calculation
+                  JJ_temp = cst.cost_calculator(xx_temp[:,:], uu_temp[:,:], xx_ref[:,:], uu_ref[:,:], TT)
 
                   costs[ii] = np.min([JJ_temp, 100*JJ])
 
 
-            plt.figure(1)
+            plt.figure("Armijio")
             plt.clf()
 
       
@@ -135,6 +114,7 @@ def select_stepsize(stepsize_0, armijo_maxiters, cc, beta, deltau, xx_ref, uu_re
             plt.xlabel('stepsize')
             plt.legend()
             plt.draw()
+            plt.pause(1e-4)
 
             plt.show()
 
