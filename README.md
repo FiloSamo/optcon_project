@@ -15,7 +15,7 @@ After finding the optimal trajectory using the Newton's-like method, we compute 
 - `src/main.py`: main file.
 
 ## License
-This project is licensed under the MIT License. See the `LICENSE` file for more details.
+This project is licensed under the MIT License.
 
 ## Usage
 1. Start the application:
